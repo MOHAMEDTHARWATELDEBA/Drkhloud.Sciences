@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Khloud Emad - المنصة التعليمية الرسمية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: #0f172a; color: #f1f5f9; overflow-x: hidden; text-align: right; }
+
+        /* الخلفية المضيئة المتحركة (الشكل الأول) */
+        .bg-glow { position: absolute; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(0, 168, 150, 0.15) 0%, rgba(0,0,0,0) 70%); z-index: -1; pointer-events: none; }
+        .bg-glow-right { position: absolute; bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(112, 26, 117, 0.15) 0%, rgba(0,0,0,0) 70%); z-index: -1; pointer-events: none; }
+
+        /* الهيدر وقائمة التنقل الزجاجية */
+        header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        header .logo { font-size: 24px; font-weight: 900; color: #fff; text-decoration: none; letter-spacing: 0.5px; }
+        header .logo span { color: #00a896; text-shadow: 0 0 15px rgba(0, 168, 150, 0.4); }
+        
+        .nav-links { list-style: none; display: flex; gap: 30px; align-items: center; }
+        .nav-links a { color: #94a3b8; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; position: relative; padding: 5px 0; }
+        .nav-links a:hover, .nav-links a.active { color: #fff; }
+        .nav-links a::after { content: ''; position: absolute; bottom: 0; right: 0; width: 0; height: 2px; background: #00a896; transition: width 0.3s ease; }
+        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+        
+        .btn-profile-nav { background: linear-gradient(135deg, #00a896, #028074); color: white !important; padding: 8px 20px !important; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 168, 150, 0.3); }
+        .btn-profile-nav:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 168, 150, 0.5); }
+        .btn-profile-nav::after { display: none !important; }
+
+        /* البانر الرئيسي الفخم (Hero Section) */
+        .hero { max-width: 1200px; margin: 60px auto 40px auto; padding: 0 5%; display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+        .hero-text { flex: 1; }
+        .hero-text h1 { font-size: 48px; font-weight: 900; line-height: 1.3; margin-bottom: 20px; color: #fff; }
+        .hero-text h1 span { background: linear-gradient(to left, #00a896, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-text p { color: #94a3b8; font-size: 18px; line-height: 1.8; margin-bottom: 30px; }
+        
+        .hero-image { flex: 1; display: flex; justify-content: center; position: relative; }
+        .hero-image img {
+    width: 100%;
+    max-width: 450px; /* يمنع الصورة من التضخم أكثر من اللازم */
+    height: auto; /* يحافظ على أبعاد الصورة الطولية والعرضية بدون تشويه */
+    object-fit: contain; /* يضمن احتواء الصورة داخل مربعها الخاص بدون الخروج عنه */
+    display: block; /* يمنع أي مسافات عشوائية تحت الصورة */
+    margin: 0 auto; /* يضمن توسيطها تماماً */
+    filter: drop-shadow(0 20px 30px rgba(0,168,150,0.2)); 
+    animation: float 6s ease-in-out infinite;
+}
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        /* شريط التنبيهات الذكي للامتحانات (مدمج بفخامة متناسقة) */
+        .exam-alert-container { max-width: 1100px; margin: 0 auto; padding: 0 5%; }
+        .exam-alert-card { background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(239, 68, 68, 0.3); padding: 20px; border-radius: 16px; backdrop-filter: blur(8px); display: none; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 40px; animation: glowPulse 2s infinite alternate; }
+        .exam-alert-card h4 { color: #ef4444; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .exam-alert-card p { font-size: 14px; color: #cbd5e1; margin-top: 4px; }
+        .btn-alert { background: #ef4444; color: #fff; padding: 10px 22px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; box-shadow: 0 4px 15px rgba(239,68,68,0.4); transition: 0.3s; }
+        .btn-alert:hover { background: #dc2626; transform: scale(1.03); }
+        @keyframes glowPulse { from { box-shadow: 0 0 10px rgba(239, 68, 68, 0.1); } to { box-shadow: 0 0 25px rgba(239, 68, 68, 0.3); } }
+
+        /* كروت الأقسام التفاعلية ثلاثية الأبعاد */
+        .sections-container { max-width: 1200px; margin: 40px auto 80px auto; padding: 0 5%; }
+        .sections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
+        
+        .box-card { background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.7)); border: 1px solid rgba(255, 255, 255, 0.03); padding: 40px 30px; border-radius: 20px; text-align: center; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; backdrop-filter: blur(10px); }
+        .box-card:hover { transform: translateY(-10px) scale(1.02); border-color: rgba(0, 168, 150, 0.3); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
+        .box-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(0, 168, 150, 0.1), transparent); opacity: 0; transition: opacity 0.3s; }
+        .box-card:hover::before { opacity: 1; }
+        
+        .icon-box { width: 80px; height: 80px; background: rgba(0, 168, 150, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px auto; transition: 0.3s; }
+        .box-card:hover .icon-box { background: #00a896; transform: rotate(10deg); }
+        .box-card:hover .icon-box i { color: #fff; }
+        
+        .box-card i { font-size: 32px; color: #00a896; transition: 0.3s; }
+        .box-card h3 { color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 15px; }
+        .box-card p { color: #94a3b8; font-size: 15px; line-height: 1.8; }
+
+        /* استجابة الشاشات */
+        @media (max-width: 968px) {
+            .hero { flex-direction: column; text-align: center; margin-top: 30px; }
+            .hero-text h1 { font-size: 36px; }
+            .hero-image { order: -1; }
+            header { padding: 15px 20px; }
+            .nav-links { gap: 15px; }
+            .nav-links a { font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="bg-glow-right"></div>
+
+    <!-- هيدر المنصة الفخم الأصلي -->
+    <header>
+        <a href="index.html" class="logo">Dr. Khloud <span>Emad</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">الرئيسية</a></li>
+            <li><a href="courses.html">المناهج والدروس</a></li>
+            <li><a href="about.html">من أنا؟</a></li>
+            <li><a href="contact.html">تواصل معنا</a></li>
+            <li><a href="student-dashboard.html" id="nav-profile-link" class="btn-profile-nav"><i class="fas fa-user-circle"></i> لوحة الطالب</a></li>
+        </ul>
+    </header>
+
+    <!-- منطقة البانر والترحيب (Hero) -->
+    <section class="hero">
+        <div class="hero-text">
+            <h1>ابتدئ رحلة التميز <br>في العلوم والأحياء مع <span>د. خلود عماد</span></h1>
+            <p>منصة تفاعلية متطورة مخصصة لبناء جيل يفهم بعمق، يتدرب بذكاء، ويحقق الصدارة في الاختبارات القومية والدورية بأساليب تكنولوجية فريدة.</p>
+        </div>
+        <div class="hero-image">
+            <!-- يمكنك وضع أي صورة كرتونية ثلاثية الأبعاد أو لوجو مادة الأحياء والعلوم هنا -->
+            <img src="dr-khloud.png" alt="Biology Teacher">
+        </div>
+    </section>
+
+    <!-- منطقة التنبيهات بالامتحانات -->
+    <div class="exam-alert-container">
+        <div class="exam-alert-card" id="global-exam-notifier">
+            <div>
+                <h4><i class="fas fa-exclamation-triangle"></i> تنبيه هام: حان وقت الاختبار!</h4>
+                <p id="notifier-exam-title">جاري استدعاء تفاصيل الامتحان المفتوح...</p>
+            </div>
+            <a href="student-dashboard.html" class="btn-alert">ابدأ الاختبار الآن</a>
+        </div>
+    </div>
+
+    <!-- شبكة الأقسام ثلاثية الأبعاد (الشكل الأول) -->
+    <section class="sections-container">
+        <div class="sections-grid">
+            
+            <div class="box-card" onclick="location.href='courses.html'">
+                <div class="icon-box"><i class="fas fa-book-open"></i></div>
+                <h3>المحاضرات والمناهج</h3>
+                <p>تصفح وحمل مذكرات الـ PDF الحصرية وشاهد الفيديوهات والشروحات التفاعلية الخاصة بصفك الدراسي الموثقة بالكامل.</p>
+            </div>
+
+            <div class="box-card" onclick="location.href='student-dashboard.html'">
+                <div class="icon-box"><i class="fas fa-laptop-code"></i></div>
+                <h3>بوابة الامتحانات الذكية</h3>
+                <p>اختبر مستواك عبر منظومة امتحانات دورية مصممة بنظام التصحيح الإلكتروني الفوري وعرض أخطائك بدقة متناهية.</p>
+            </div>
+
+            <div class="box-card" onclick="location.href='contact.html'">
+                <div class="icon-box"><i class="fas fa-comments-dollar" style="color: #00a896;"></i></div>
+                <h3>غرفة الدعم والمراسلة</h3>
+                <p>قناة اتصال مباشرة وآمنة 100% تتيح للطالب وولي الأمر إرسال الاستفسارات واستقبال التوجيهات الرسمية والمباشرة.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <script>
+        // فحص وجود امتحانات جديدة غير محلولة للطالب المسجل برمجياً
+        function checkExamsNotification() {
+            const activeStudent = JSON.parse(sessionStorage.getItem('currentUser'));
+            if (!activeStudent) return; 
+
+            const examsDb = JSON.parse(localStorage.getItem('platform_exams_v2')) || [];
+            const resultsDb = JSON.parse(localStorage.getItem('exam_results_v2')) || [];
+
+            // تصفية الامتحانات التابعة لصف الطالب الحالي
+            const myClassExams = examsDb.filter(ex => ex.targetClass === activeStudent.targetClass);
+            if(myClassExams.length === 0) return;
+
+            // جلب أحدث امتحان منشور لصفه الدراسي
+            const latestExam = myClassExams[myClassExams.length - 1];
+
+            // التحقق هل تم حله مسبقاً من هذا الطالب؟
+            const isSolved = resultsDb.some(res => res.examId === latestExam.id && res.studentEmail === activeStudent.email);
+
+            if (!isSolved) {
+                document.getElementById('global-exam-notifier').style.display = "flex";
+                document.getElementById('notifier-exam-title').innerText = `يوجد امتحان متاح حالياً: "${latestExam.title}" لطلاب ${latestExam.targetClass}. سارع بالحل لقياس مستواك!`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkExamsNotification);
+    </script>
+</body>
+</html>

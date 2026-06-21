@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بوابة ولي الأمر - Dr. Khloud Emad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
+        body { background:#f4f6f9; color:#333; padding:20px; }
+        .container { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:300px 1fr; gap:20px; }
+        .sidebar { background:#fff; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); text-align:right; height:fit-content; }
+        .main-card { background:#fff; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); text-align:right; margin-bottom:20px; }
+        .main-card h3 { color:#2c3e50; margin-bottom:15px; border-bottom:2px solid #00a896; padding-bottom:8px; }
+        
+        /* جدول كشف الإجابات والنتائج الملون */
+        .result-table { width:100%; border-collapse:collapse; margin-top:15px; }
+        .result-table th, .result-table td { padding:12px; border-bottom:1px solid #e2e8f0; text-align:right; }
+        .result-table th { background:#2c3e50; color:#fff; }
+        .badge { padding:4px 10px; border-radius:20px; font-weight:bold; font-size:13px; }
+        .bg-success { background:#d1fae5; color:#065f46; }
+        
+        /* تفاصيل الإجابات الملونة */
+        .qa-box { background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #cbd5e1; margin-top:10px; font-size:14px; }
+        .txt-correct { color:#10b981; font-weight:bold; }
+        .txt-wrong { color:#ef4444; font-weight:bold; }
+
+        .chat-box { height:180px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px; overflow-y:auto; margin-bottom:10px; display:flex; flex-direction:column; gap:8px; }
+        .msg { max-width:75%; padding:8px 12px; border-radius:8px; font-size:14px; }
+        .msg.parent { background:#00a896; color:#fff; align-self:flex-start; }
+        .msg.admin { background:#2c3e50; color:#fff; align-self:flex-end; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <h2 style="color:#00a896; font-size:20px; text-align:center; margin-bottom:20px;">بيانات ولي الأمر</h2>
+        <p style="margin-bottom:8px;"><i class="fas fa-user-shield"></i> ولي الأمر: <strong id="p-name">محمد علي حسن</strong></p>
+        <p style="margin-bottom:8px;"><i class="fas fa-child"></i> الابن الخاضع للمتابعة: <strong id="p-child">أحمد محمد علي</strong></p>
+        <p style="margin-bottom:8px;"><i class="fas fa-id-card"></i> كود الطالب: <strong id="p-code">ST-8872</strong></p>
+        <p style="margin-bottom:8px;"><i class="fas fa-phone"></i> رقم التليفون: <strong id="p-phone">01023456789</strong></p>
+    </aside>
+
+    <main style="display:flex; flex-direction:column; gap:20px;">
+        <div class="main-card">
+            <h3><i class="fas fa-chart-line"></i> تقرير نتائج امتحانات الابن وإجاباته الملونة</h3>
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>اسم الامتحان</th>
+                        <th>تاريخ الحل</th>
+                        <th>الدرجة الرقمية</th>
+                        <th>النسبة المئوية</th>
+                    </tr>
+                </thead>
+                <tbody id="parent-results-table-body"></tbody>
+            </table>
+            
+            <div id="detailed-answers-zone"></div>
+        </div>
+
+        <div class="main-card">
+            <h3><i class="fas fa-comments"></i> صندوق المراسلة لولي الأمر</h3>
+            <div class="chat-box" id="parent-chat-box"></div>
+            <div class="chat-input-row" style="display:flex; gap:10px;">
+                <input type="text" id="parent-msg-input" placeholder="اكتب رسالتك للإدمن هنا..." style="flex:1; padding:10px; border-radius:6px; border:1px solid #cbd5e1; text-align:right;">
+                <button class="btn" style="background:#00a896; color:white; border:none; padding:10px 20px; border-radius:6px; font-weight:bold;" onclick="sendParentMessage()">إرسال</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    let activeParent = {
+        name: "محمد علي حسن", childName: "أحمد محمد علي", studentCode: "ST-8872", phone: "01023456789", studentEmail: "ahmed@test.com"
+    };
+
+    function loadParentDashboard() {
+        const results = JSON.parse(localStorage.getItem('exam_results_v2')) || [];
+        const tbody = document.getElementById('parent-results-table-body');
+        const detailsZone = document.getElementById('detailed-answers-zone');
+        
+        tbody.innerHTML = "";
+        detailsZone.innerHTML = "";
+
+        // تصفية نتائج هذا الابن فقط
+        const childResults = results.filter(r => r.studentEmail === activeParent.studentEmail);
+
+        if(childResults.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='4' style='text-align:center; color:#aaa;'>لم يقم الابن بحل أي امتحانات بعد.</td></tr>";
+            return;
+        }
+
+        childResults.forEach((res, idx) => {
+            // حساب النسبة المئوية تلقائياً
+            let percentage = ((res.score / res.total) * 100).toFixed(1);
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${res.examTitle}</strong></td>
+                    <td>${res.date}</td>
+                    <td><span class="badge bg-success">${res.score} من ${res.total}</span></td>
+                    <td><strong>${percentage}%</strong></td>
+                </tr>
+            `;
+
+            // بناء خريطة مراجعة الإجابات الملونة لولي الأمر
+            let qaHtml = `<h4><i class="fas fa-eye"></i> تفاصيل ورقة إجابة: ${res.examTitle}</h4>`;
+            res.answersSheet.forEach((item, qIndex) => {
+                let statusClass = item.isCorrect ? 'txt-correct' : 'txt-wrong';
+                let statusIcon = item.isCorrect ? '🟢 صحيح:' : '🔴 خطأ:';
+                qaHtml += `
+                    <div class="qa-box">
+                        <p><strong>س${qIndex+1}: ${item.questionText}</strong></p>
+                        <p class="${statusClass}">${statusIcon} إجابة الطالب: "${item.studentAnswer}"</p>
+                        ${!item.isCorrect ? `<p style="color:#10b981;">✔️ الإجابة الصحيحة النموذجية: "${item.correctAnswer}"</p>` : ''}
+                    </div>
+                `;
+            });
+            detailsZone.innerHTML += qaHtml;
+        });
+
+        loadParentChat();
+    }
+
+    function loadParentChat() {
+        const messages = JSON.parse(localStorage.getItem('global_chat_messages')) || [];
+        const box = document.getElementById('parent-chat-box');
+        box.innerHTML = "";
+        
+        messages.filter(m => m.studentEmail === activeParent.studentEmail && m.userRole === "parent").forEach(m => {
+            box.innerHTML += `<div class="msg ${m.sender}">${m.text}</div>`;
+        });
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function sendParentMessage() {
+        const input = document.getElementById('parent-msg-input');
+        if(input.value.trim() === "") return;
+
+        let messages = JSON.parse(localStorage.getItem('global_chat_messages')) || [];
+        messages.push({
+            studentEmail: activeParent.studentEmail, studentName: activeParent.childName, studentCode: activeParent.studentCode,
+            parentName: activeParent.name, userRole: "parent", sender: "parent", text: input.value.trim(), date: Date.now()
+        });
+        localStorage.setItem('global_chat_messages', JSON.stringify(messages));
+        input.value = "";
+        loadParentChat();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { loadParentDashboard(); setInterval(loadParentChat, 3000); });
+</script>
+</body>
+</html>

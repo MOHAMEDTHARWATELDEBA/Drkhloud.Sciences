@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تواصل معنا - Dr. Khloud Emad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+        body { background:#f8fafc; color:#2c3e50; text-align:right; }
+        header { background:#2c3e50; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; }
+        header .logo { color:#fff; font-size:22px; font-weight:bold; text-decoration:none; }
+        header .logo span { color:#00a896; }
+        .nav-links { list-style:none; display:flex; gap:20px; }
+        .nav-links a { color:#cbd5e1; text-decoration:none; font-weight:600; }
+        .nav-links a:hover, .nav-links a.active { color:#00a896; }
+
+        .contact-wrapper { max-width:650px; margin:50px auto; background:#fff; padding:35px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.04); }
+        .form-group { margin-bottom:18px; }
+        .form-group label { display:block; font-size:14px; font-weight:bold; color:#475569; margin-bottom:6px; }
+        .form-group input, .form-group textarea, .form-group select { width:100%; padding:11px; border:1px solid #cbd5e1; border-radius:6px; outline:none; text-align:right; font-size:14px; }
+        .btn-send { background:#00a896; color:white; border:none; padding:12px 25px; border-radius:6px; font-weight:bold; width:100%; cursor:pointer; font-size:15px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">Dr. Khloud <span>Emad</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="courses.html">المناهج والدروس</a></li>
+            <li><a href="about.html">من أنا؟</a></li>
+            <li><a href="contact.html" class="active">تواصل معنا</a></li>
+            <li><a href="student-dashboard.html"><i class="fas fa-user-circle"></i> حسابي</a></li>
+        </ul>
+    </header>
+
+    <div class="contact-wrapper">
+        <h2 style="color:#2c3e50; margin-bottom:10px;"><i class="fas fa-paper-plane" style="color:#00a896;"></i> راسل الدكتورة مباشرة</h2>
+        <p style="color:#64748b; font-size:14px; margin-bottom:25px;">إذا كان لديك أي سؤال علمي أو مشكلة في الاشتراك، اكتب رسالتك وسيصلك الرد في حسابك.</p>
+        
+        <div class="form-group">
+            <label>بصفتك مَنْ تراسلنا؟</label>
+            <select id="sender-role-select">
+                <option value="student">أنا طالب بالمنصة</option>
+                <option value="parent" selected>أنا ولي أمر طالب</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>الاسم الكامل للمُرسِل</label>
+            <input type="text" id="sender-name-input" placeholder="اكتب اسمك الثلاثي">
+        </div>
+        <div class="form-group">
+            <label>البريد الإلكتروني المرتبط بالطالب</label>
+            <input type="email" id="sender-email-input" placeholder="مثال: student@test.com">
+        </div>
+        <div class="form-group">
+            <label>نص الرسالة والاستفسار</label>
+            <textarea id="sender-text-input" rows="5" placeholder="اكتب تفاصيل استفسارك بدقة هنا..."></textarea>
+        </div>
+        <button class="btn-send" onclick="submitContactForm()">إرسال الرسالة فوراً</button>
+    </div>
+
+    <script>
+        // ممتلئ تلقائياً ببيانات الحساب المفتوح إن وجد تسهيلاً للمستخدم
+        document.addEventListener('DOMContentLoaded', () => {
+            const activeUser = JSON.parse(sessionStorage.getItem('currentUser'));
+            if(activeUser) {
+                document.getElementById('sender-name-input').value = activeUser.name;
+                document.getElementById('sender-email-input').value = activeUser.email;
+                document.getElementById('sender-role-select').value = "student";
+            }
+        });
+
+        function submitContactForm() {
+            const role = document.getElementById('sender-role-select').value;
+            const name = document.getElementById('sender-name-input').value.trim();
+            const email = document.getElementById('sender-email-input').value.trim();
+            const text = document.getElementById('sender-text-input').value.trim();
+
+            if(!name || !email || !text) return alert('يرجى ملء كافة حقول الاستمارة أولاً!');
+
+            let messages = JSON.parse(localStorage.getItem('global_chat_messages')) || [];
+            
+            messages.push({
+                studentEmail: email,
+                studentName: role === 'student' ? name : 'غير محدد',
+                studentCode: 'عبر بوابة الاتصال',
+                parentName: role === 'parent' ? name : 'غير محدد',
+                userRole: role, 
+                sender: role, // لكي يعتبر هو الطرف البادئ بالمحادثة
+                text: text,
+                date: Date.now()
+            });
+
+            localStorage.setItem('global_chat_messages', JSON.stringify(messages));
+            alert('🚀 تم تسليم رسالتك بنجاح إلى الإدارة وجاري مراجعتها حالياً!');
+            document.getElementById('sender-text-input').value = "";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الملف الشخصي - Dr. Khloud Emad</title>
+    <!-- استدعاء مكتبة الأيقونات Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        
+        body { 
+            background-color: #f8f9fa; 
+            color: #333; 
+            line-height: 1.6; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+            animation: fadeInPage 0.8s ease-out forwards;
+        }
+        
+        @keyframes fadeInPage {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* الهيدر المشترك */
+        header { background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: fixed; width: 100%; top: 0; right: 0; z-index: 1000; }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: bold; color: #2c3e50; text-decoration: none; }
+        .logo span { color: #00a896; }
+        .nav-links { list-style: none; display: flex; gap: 20px; align-items: center; }
+        .nav-links a { text-decoration: none; color: #555; font-weight: 600; transition: color 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: #00a896; }
+
+        /* تنسيقات قائمة الحساب الشخصي المنسدلة */
+        .user-menu-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .user-profile-btn {
+            background: #00a896;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+        .user-profile-btn:hover { background: #028074; }
+        .dropdown-menu {
+            position: absolute;
+            top: 130%;
+            left: 0;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            width: 200px;
+            list-style: none;
+            overflow: hidden;
+            display: none;
+            z-index: 2000;
+        }
+        .dropdown-menu.show { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .dropdown-menu li a, .dropdown-menu li button {
+            display: block;
+            width: 100%;
+            text-align: right;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .dropdown-menu li a:hover, .dropdown-menu li button:hover { background: #f1f5f9; color: #00a896; }
+        .dropdown-menu .logout-btn { color: #ef4444; border-top: 1px solid #e2e8f0; }
+        .dropdown-menu .logout-btn:hover { background: #fef2f2; color: #ef4444; }
+
+        /* حاوية محتوى الصفحة الرئيسي */
+        .main-container { flex: 1; max-width: 850px; margin: 0 auto; padding: 140px 20px 60px 20px; width: 100%; }
+        
+        .profile-card { 
+            background: white; 
+            padding: 35px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            margin-bottom: 30px; 
+            animation: scaleUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        @keyframes scaleUp {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .profile-card h2 { color: #2c3e50; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 22px; text-align: right; }
+        .profile-card h2 i { color: #00a896; }
+        
+        /* شبكة عرض المعلومات */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; }
+        .info-item { background: #f8fafc; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .info-item label { font-size: 13px; color: #64748b; font-weight: bold; display: block; margin-bottom: 6px; }
+        .info-item p { font-size: 16px; color: #1e293b; font-weight: 600; }
+
+        /* صندوق الشات والرسائل لولي الأمر */
+        .chat-section { 
+            background: white; 
+            padding: 35px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            display: none; /* يظهر لولي الأمر فقط عبر الجافا سكريبت */
+            animation: scaleUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 0.1s;
+        }
+        .chat-section h2 { color: #2c3e50; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 22px; text-align: right; }
+        .chat-section h2 i { color: #00a896; }
+        
+        .chat-box { background: #f1f5f9; height: 280px; border-radius: 8px; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        
+        .msg { max-width: 75%; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 500; line-height: 1.5; text-align: right; }
+        .msg.sent { background: #00a896; color: white; align-self: flex-start; border-bottom-right-radius: 0; box-shadow: 0 2px 5px rgba(0, 168, 150, 0.2); }
+        .msg.received { background: #e2e8f0; color: #1e293b; align-self: flex-end; border-bottom-left-radius: 0; }
+        
+        .chat-input-area { display: flex; gap: 12px; }
+        .chat-input-area input { flex: 1; padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 15px; text-align: right; transition: border-color 0.3s; }
+        .chat-input-area input:focus { border-color: #00a896; }
+        .chat-send-btn { background: #2c3e50; color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: background 0.3s; }
+        .chat-send-btn:hover { background: #00a896; }
+
+        footer { background-color: #2c3e50; color: white; text-align: center; padding: 30px 20px; margin-top: auto; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .info-grid { grid-template-columns: 1fr; }
+            .msg { max-width: 85%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر المطور مكرر هنا للتناسق التام -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">Dr.Khloud <span>Science</span></a>
+            <ul class="nav-links">
+                <li><a href="index.html">الرئيسية</a></li>
+                <li><a href="courses.html">المناهج الدراسية</a></li>
+                <li><a href="about.html">من نحن</a></li>
+                <li><a href="contact.html">اتصل بنا</a></li>
+            </ul>
+            <div class="user-menu-container" id="user-menu-wrapper">
+                <div class="user-profile-btn" onclick="toggleUserMenu()">
+                    <i class="fas fa-user-circle" style="font-size: 20px;"></i>
+                    <span id="nav-username">الحساب الشخصي</span>
+                    <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+                </div>
+                <ul class="dropdown-menu" id="user-dropdown">
+                    <li><a href="profile.html"><i class="fas fa-id-card"></i> المعلومات الأساسية</a></li>
+                    <li><button onclick="handleLogout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- كارت عرض البيانات الأساسية الذكي -->
+        <div class="profile-card">
+            <h2><i class="fas fa-address-card"></i> البيانات الشخصية للحساب</h2>
+            <div class="info-grid" id="profile-info-grid">
+                <!-- سيتم ملء حقول البيانات برمجياً طبقاً لنوعية الحساب المسجل -->
+            </div>
+        </div>
+
+        <!-- كارت نظام الرسائل والاستفسارات المباشرة (يظهر حصرياً لولي الأمر) -->
+        <div class="chat-section" id="parent-chat-box">
+            <h2><i class="fas fa-paper-plane"></i> صندوق الرسائل والاستفسارات مع الإدارة</h2>
+            <div class="chat-box" id="chat-messages-container">
+                <div class="msg received">مرحباً بحضرتك يا فندم في قسم الدعم الفني لمنصة د. خلود. كيف يمكننا مساعدتك اليوم؟ يمكنك كتابة أي استفسار أو مشكلة تواجه ابنك هنا وسيرد عليك الإدمن فوراً.</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input-field" placeholder="اكتب رسالتك أو استفسارك هنا..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                <button class="chat-send-btn" onclick="sendChatMessage()">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <footer><p>جميع الحقوق محفوظة © منصة Dr. Khloud Emad</p></footer>
+
+    <script>
+        // التحقق الأمني من وجود مستخدم قام بتسجيل الدخول الفعلي
+        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+        if (!currentUser) {
+            alert('عذراً، يجب تسجيل الدخول أولاً لاستعراض هذه الصفحة!');
+            window.location.href = 'login.html';
+        }
+
+        // تخصيص اسم المستخدم الأول في شريط التنقل العلوي
+        document.getElementById('nav-username').innerText = currentUser.name.split(' ')[0];
+
+        const grid = document.getElementById('profile-info-grid');
+        
+        // فحص نوع الحساب وعرض الحقول الخاصة بكل دور بناءً على طلبك
+        if (currentUser.role === 'student') {
+            // عرض بيانات الطالب: الاسم، الكود التلقائي، السن، السنة الدراسية، الهاتف، البريد
+            grid.innerHTML = `
+                <div class="info-item"><label>اسم الطالب بالكامل</label><p>${currentUser.name}</p></div>
+                <div class="info-item"><label>كود الطالب (الخاص بالمنصة)</label><p style="color:#00a896; font-size:18px; font-weight: 700;">${currentUser.code}</p></div>
+                <div class="info-item"><label>السن</label><p>${currentUser.age} سنوات</p></div>
+                <div class="info-item"><label>السنة الدراسية</label><p>${currentUser.grade}</p></div>
+                <div class="info-item"><label>رقم هاتف الطالب</label><p>${currentUser.phone}</p></div>
+                <div class="info-item"><label>البريد الإلكتروني</label><p>${currentUser.email}</p></div>
+            `;
+        } else {
+            // عرض بيانات ولي الأمر: الاسم، هاتف التواصل، اسم الطالب التابع، كود الطالب المتابع، البريد
+            grid.innerHTML = `
+                <div class="info-item"><label>اسم ولي الأمر بالكامل</label><p>${currentUser.name}</p></div>
+                <div class="info-item"><label>رقم هاتف التواصل</label><p>${currentUser.phone}</p></div>
+                <div class="info-item"><label>اسم الطالب التابع لك</label><p>${currentUser.childName}</p></div>
+                <div class="info-item"><label>كود الطالب المُراد متابعته</label><p style="color:#00a896; font-size:17px; font-weight: 700;">${currentUser.childCode}</p></div>
+                <div class="info-item"><label>البريد الإلكتروني لولي الأمر</label><p>${currentUser.email}</p></div>
+            `;
+            // تفعيل وإظهار جزء الشات مع الأدمن لولي الأمر
+            document.getElementById('parent-chat-box').style.display = 'block';
+            loadChatMessages();
+        }
+
+        // إرسال وتخزين رسائل الشات محلياً لتظهر للإدارة
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input-field');
+            if (input.value.trim() === "") return;
+
+            const chatContainer = document.getElementById('chat-messages-container');
+            
+            // إضافة الرسالة في واجهة الشات فوراً كرسالة مُرسلة
+            chatContainer.innerHTML += `<div class="msg sent">${input.value}</div>`;
+            
+            // تخزين الرسالة في الـ localStorage لتمكين لوحة الإدمن من قرائتها مستقبلاً
+            const adminMessages = JSON.parse(localStorage.getItem('adminChatMessages')) || [];
+            adminMessages.push({ 
+                parentEmail: currentUser.email, 
+                parentName: currentUser.name, 
+                text: input.value, 
+                sender: 'parent',
+                time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+            });
+            localStorage.setItem('adminChatMessages', JSON.stringify(adminMessages));
+
+            input.value = "";
+            // جعل الاسكرول يتجه لأسفل تلقائياً مع الرسائل الجديدة
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // تحميل وعرض المحادثة السابقة لولي الأمر المسجل حالياً
+        function loadChatMessages() {
+            const adminMessages = JSON.parse(localStorage.getItem('adminChatMessages')) || [];
+            const chatContainer = document.getElementById('chat-messages-container');
+            
+            // فلترة الرسائل الخاصة بولي الأمر الحالي فقط
+            const myMessages = adminMessages.filter(m => m.parentEmail === currentUser.email);
+            
+            myMessages.forEach(m => {
+                const type = m.sender === 'parent' ? 'sent' : 'received';
+                chatContainer.innerHTML += `<div class="msg ${type}">${m.text}</div>`;
+            });
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // التحكم بالقائمة المنسدلة وتسجيل الخروج
+        function toggleUserMenu() { 
+            document.getElementById('user-dropdown').classList.toggle('show'); 
+        }
+        
+        function handleLogout() { 
+            sessionStorage.removeItem('currentUser'); 
+            window.location.href = 'index.html'; 
+        }
+
+        // إغلاق القائمة المنسدلة عند النقر في أي مكان خارجي
+        window.onclick = function(event) {
+            if (!event.target.matches('.user-profile-btn') && !event.target.matches('.user-profile-btn *')) {
+                const dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    if (dropdowns[i].classList.contains('show')) {
+                        dropdowns[i].classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

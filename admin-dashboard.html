@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الإدارة الشاملة - Dr. Khloud Emad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #f1f5f9; color: #333; display: flex; min-height: 100vh; }
+
+        /* القائمة الجانبية */
+        .sidebar { width: 280px; background-color: #2c3e50; color: white; padding: 25px 15px; display: flex; flex-direction: column; gap: 20px; }
+        .sidebar .logo { font-size: 22px; font-weight: bold; text-align: center; border-bottom: 1px solid #34495e; padding-bottom: 15px; }
+        .sidebar .logo span { color: #00a896; }
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .sidebar-menu li a { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; color: #cbd5e1; text-decoration: none; font-weight: 600; border-radius: 8px; transition: all 0.3s; }
+        .sidebar-menu li a:hover, .sidebar-menu li a.active { background-color: #00a896; color: white; }
+        .sidebar-menu li a .badge { background: #ef4444; color: white; font-size: 11px; padding: 2px 7px; border-radius: 10px; display: none; }
+
+        /* المحتوى الرئيسي */
+        .main-content { flex: 1; padding: 35px; overflow-y: auto; }
+        .header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
+        .header-title h1 { color: #2c3e50; font-size: 26px; }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* الأقسام والتبويبات */
+        .admin-section { display: none; animation: fadeIn 0.4s ease-in-out forwards; }
+        .admin-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* كروت التحكم */
+        .editor-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 25px; border-right: 4px solid #00a896; text-align: right; }
+        .editor-card h3 { color: #2c3e50; margin-bottom: 15px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 15px; text-align: right; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 14px; text-align: right; }
+        
+        .btn-panel { background: #00a896; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-left: 5px; }
+        .btn-panel:hover { background: #028074; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+
+        /* الهيكل الشجري للمناهج والامتحانات */
+        .items-display-list { margin-top: 15px; background: #f8fafc; border-radius: 6px; padding: 15px; border: 1px solid #e2e8f0; text-align: right; }
+        .course-item-box { background: white; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px; }
+        .course-header-row { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #2c3e50; }
+        .lecture-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 15px; background: #f1f5f9; margin-top: 5px; border-radius: 4px; font-size: 14px; }
+        
+        .badge-status { font-size: 11px; padding: 3px 8px; border-radius: 12px; color: white; font-weight: bold; }
+        .status-all { background: #10b981; }
+        .status-students { background: #3b82f6; }
+        .status-admin { background: #ef4444; }
+
+        /* منشئ الأسئلة التفاعلي */
+        .question-builder-item { background: #f8fafc; padding: 15px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 15px; position: relative; }
+        .remove-q-btn { position: absolute; top: 10px; left: 10px; background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+        /* شات صندوق الوارد الثنائي */
+        .inbox-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { padding: 10px 20px; background: #e2e8f0; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: #475569; }
+        .tab-btn.active { background: #2c3e50; color: white; }
+        .inbox-container { display: grid; grid-template-columns: 300px 1fr; gap: 20px; height: 480px; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .users-list { border-left: 1px solid #e2e8f0; overflow-y: auto; background: #f8fafc; }
+        .user-item { padding: 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; text-align: right; position: relative; }
+        .user-item.active, .user-item:hover { background: #e2e8f0; }
+        .chat-area { display: flex; flex-direction: column; background: #fff; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f8fafc; }
+        .msg { max-width: 70%; padding: 10px 14px; border-radius: 10px; font-size: 14px; text-align: right; }
+        .msg.admin { background: #2c3e50; color: white; align-self: flex-start; border-bottom-right-radius: 0; }
+        .msg.student, .msg.parent { background: #00a896; color: white; align-self: flex-end; border-bottom-left-radius: 0; }
+        .chat-footer { padding: 15px; display: flex; gap: 10px; border-top: 1px solid #e2e8f0; }
+        .chat-footer input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: right; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">لوحة <span>الإدارة</span></div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="#" class="active" id="menu-inbox" onclick="switchSection('inbox')">
+                    <span><i class="fas fa-envelope"></i> صندوق الرسائل المشترك</span>
+                    <span class="badge" id="alert-badge">0</span>
+                </a>
+            </li>
+            <li><a href="#" id="menu-courses" onclick="switchSection('courses')"><i class="fas fa-book-open"></i> إدارة المناهج والدروس</a></li>
+            <li><a href="#" id="menu-exams" onclick="switchSection('exams')"><i class="fas fa-file-signature"></i> مولد الامتحانات الذكي</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="header-title">
+            <h1 id="section-title-text">صندوق الوارد المزدوج</h1>
+            <button class="logout-btn" onclick="location.href='index.html'">خروج</button>
+        </div>
+
+        <section id="section-inbox" class="admin-section active">
+            <div class="inbox-tabs">
+                <button class="tab-btn active" id="tab-students" onclick="switchInboxTab('student')">رسائل الطلاب</button>
+                <button class="tab-btn" id="tab-parents" onclick="switchInboxTab('parent')">رسائل أولياء الأمور</button>
+            </div>
+            <div class="inbox-container">
+                <div class="users-list" id="users-list-container"></div>
+                <div class="chat-area">
+                    <div class="chat-header" id="active-chat-header" style="padding:15px; background:#f1f5f9; text-align:right; font-weight:bold;">اختر غرفه محادثه لبدء المراسلة الرسمية</div>
+                    <div class="chat-messages" id="admin-chat-messages"></div>
+                    <div class="chat-footer">
+                        <input type="text" id="admin-reply-input" placeholder="اكتب الرد هنا..." onkeypress="if(event.key==='Enter') sendAdminReply()">
+                        <button class="btn-panel" onclick="sendAdminReply()">إرسال الرد</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-courses" class="admin-section">
+            <div class="editor-card">
+                <h3><i class="fas fa-folder-plus"></i> إضافة / تعديل قسم دراسي</h3>
+                <input type="hidden" id="editing-course-key" value="">
+                <div class="form-group">
+                    <label>اسم الصف أو القسم الدراسي</label>
+                    <input type="text" id="course-name-input" placeholder="مثال: الصف الأول الثانوي - ترم أول">
+                </div>
+                <div class="form-group">
+                    <label>صلاحية الوصول ومستوى الأمان</label>
+                    <select id="course-privacy-input">
+                        <option value="all">متاح للجميع (زوار + طلاب)</option>
+                        <option value="students" selected>للطلاب المشتركين فقط</option>
+                        <option value="admin">مغلق للإدمن والمراجعة فقط</option>
+                    </select>
+                </div>
+                <button class="btn-panel" id="btn-save-course" onclick="saveCourseSection()">حفظ القسم الدراسي</button>
+                <button class="btn-panel btn-danger" id="btn-cancel-course-edit" style="display:none;" onclick="cancelCourseEdit()">إلغاء التعديل</button>
+            </div>
+
+            <div class="editor-card">
+                <h3><i class="fas fa-video"></i> إضافة / تعديل درس داخل قسم</h3>
+                <input type="hidden" id="editing-lecture-index" value="">
+                <div class="form-group">
+                    <label>اختر القسم المستهدف</label>
+                    <select id="lecture-course-select"></select>
+                </div>
+                <div class="form-group">
+                    <label>عنوان الدرس</label>
+                    <input type="text" id="lecture-title-input" placeholder="مثال: مفهوم التكيف والبقاء">
+                </div>
+                <div class="form-group">
+                    <label>رابط فيديو اليوتيوب</label>
+                    <input type="text" id="lecture-video-input" placeholder="رابط فيديو الشرح">
+                </div>
+                <div class="form-group">
+                    <label>رابط ملف الـ PDF والواجب (اختياري)</label>
+                    <input type="text" id="lecture-pdf-input" placeholder="رابط المرفقات">
+                </div>
+                <button class="btn-panel" id="btn-save-lecture" onclick="saveLectureItem()">حفظ الدرس</button>
+                <button class="btn-panel btn-danger" id="btn-cancel-lecture-edit" style="display:none;" onclick="cancelLectureEdit()">إلغاء</button>
+            </div>
+
+            <div class="editor-card">
+                <h3><i class="fas fa-sitemap"></i> هيكل المناهج والتحكم الشامل</h3>
+                <div class="items-display-list" id="courses-management-tree"></div>
+            </div>
+        </section>
+
+        <section id="section-exams" class="admin-section">
+            <div class="editor-card">
+                <h3><i class="fas fa-plus-circle"></i> إنشاء امتحان إلكتروني جديد</h3>
+                <div class="form-group">
+                    <label>السنة / الصف الدراسي المستهدف (سيصل الامتحان لطلاب هذا الصف فقط)</label>
+                    <select id="exam-target-class">
+                        <option value="الصف الأول الثانوي">الصف الأول الثانوي</option>
+                        <option value="الصف الثاني الثانوي">الصف الثاني الثانوي</option>
+                        <option value="الصف الثالث الثانوي">الصف الثالث الثانوي</option>
+                        <option value="الصف الرابع الابتدائي">الصف الرابع الابتدائي</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>عنوان الامتحان</label>
+                    <input type="text" id="exam-title-input" placeholder="مثال: امتحان الباب الأول - الفيزياء الحديثة">
+                </div>
+
+                <div id="questions-builder-zone">
+                    </div>
+                
+                <button class="btn-panel" style="background:#34495e; margin-bottom:15px;" onclick="addNewQuestionBlockToForm()">➕ إضافة سؤال جديد للفورم</button>
+                <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
+                <button class="btn-panel" style="width:100%; padding:14px;" onclick="publishExamToStudents()">🚀 نشر وتثبيت الامتحان للطلاب المحددين فوراً</button>
+            </div>
+
+            <div class="editor-card">
+                <h3><i class="fas fa-history"></i> الامتحانات المنشورة حالياً</h3>
+                <div class="items-display-list" id="published-exams-list"></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let activeTabRole = 'student';
+        let selectedUserEmail = "";
+        let questionCounter = 0;
+
+        function switchSection(sectionId) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            document.getElementById('section-' + sectionId).classList.add('active');
+            document.getElementById('menu-' + sectionId).classList.add('active');
+            
+            if(sectionId === 'inbox') {
+                document.getElementById('section-title-text').innerText = "صندوق الوارد المزدوج";
+                loadInboxEngine();
+            } else if(sectionId === 'courses') {
+                document.getElementById('section-title-text').innerText = "إدارة المناهج والدروس والصلاحيات";
+                renderCoursesTree();
+            } else if(sectionId === 'exams') {
+                document.getElementById('section-title-text').innerText = "منشئ ومولد الامتحانات الإلكترونية المتقدم";
+                renderPublishedExams();
+            }
+        }
+
+        /* --- 📂 نظام إدارة المناهج والدروس (CRUD) --- */
+        function saveCourseSection() {
+            const name = document.getElementById('course-name-input').value.trim();
+            const privacy = document.getElementById('course-privacy-input').value;
+            const editingKey = document.getElementById('editing-course-key').value;
+
+            if(!name) return alert('برجاء كتابة اسم القسم الدراسي!');
+            let db = JSON.parse(localStorage.getItem('platform_courses_v2')) || {};
+
+            if(editingKey && editingKey !== name) { delete db[editingKey]; }
+
+            if(!db[name]) db[name] = { privacy: privacy, lectures: [] };
+            else db[name].privacy = privacy;
+
+            localStorage.setItem('platform_courses_v2', JSON.stringify(db));
+            cancelCourseEdit(); renderCoursesTree();
+            alert('تم حفظ وتحديث القسم الدراسي!');
+        }
+
+        function editCourse(key) {
+            let db = JSON.parse(localStorage.getItem('platform_courses_v2')) || {};
+            document.getElementById('course-name-input').value = key;
+            document.getElementById('course-privacy-input').value = db[key].privacy;
+            document.getElementById('editing-course-key').value = key;
+            document.getElementById('btn-save-course').innerText = "تحديث القسم";
+            document.getElementById('btn-cancel-course-edit').style.display = "inline-block";
+        }
+
+        function cancelCourseEdit() {
+            document.getElementById('course-name-input').value = "";
+            document.getElementById('editing-course-key').value = "";
+            document.getElementById('btn-save-course').innerText = "حفظ القسم الدراسي";
+            document.getElementById('btn-cancel-course-edit').style.display = "none";
+        }
+
+        function deleteCourse(key) {
+            if(confirm(`هل تريد مسح قسم "${key}" بجميع دروسه نهائياً؟`)) {
+                let db = JSON.parse(localStorage.getItem('platform_courses_v2')) || {};
+                delete db[key];
+                localStorage.setItem('platform_courses_v2', JSON.stringify(db));
+                renderCoursesTree();
+            }
+        }
+
+        function saveLectureItem() {
+            const courseKey = document.getElementById('lecture-course-select').value;
+            const title = document.getElementById('lecture-title-input').value.trim();
+            const video = document.getElementById('lecture-video-input').value.trim();
+            const pdf = document.getElementById('lecture-pdf-input').value.trim();
+            const editIndex = document.getElementById('editing-lecture-index').value;
+
+            if(!courseKey || !title || !video) return alert('يرجى ملء البيانات الأساسية للدرس!');
+
+            let db = JSON.parse(localStorage.getItem('platform_courses_v2')) || {};
+            let lecData = { title, video, pdf };
+
+            if(editIndex !== "") db[courseKey].lectures[editIndex] = lecData;
+            else db[courseKey].lectures.push(lecData);
+
+            localStorage.setItem('platform_courses_v2', JSON.stringify(db));
+            cancelLectureEdit(); renderCoursesTree();
+            alert('تم حفظ الدرس بنجاح داخل القسم!');
+        }
+
+        function editLecture(courseKey, index) {
+            let db = JSON.parse(localStorage.getItem('platform_courses_v2')) || {};
+            let lec = db[courseKey].lectures[index];
+            document.getElementById('lecture-course-select').value = courseKey;
+            document.getElementById('lecture-title-input').value = lec.title;
+            document.getElementById('lecture-video-input').value = lec.video;
+            document.getElementById('lecture-pdf-input').value = lec.pdf || "";
+            document.getElementById('editing-lecture-index').value = index;
+            document.getElementById('btn-save-lecture').innerText = "تحديث الدرس الحالي";
+            document.getElementById('btn-cancel-lecture-edit').style.display = "inline-block";
+        }
+
+        function cancelLectureEdit() {
+            document.getElementById('lecture-title-input').value = "";
+            document.getElementById('lecture-video-input').value = "";
+            document.getElementById('lecture-pdf-input').value = "";
+            document.getElementById('editing-lecture-index').value = "";
+            document.getElementById('btn-save-lecture').innerText = "حفظ الدرس";
+            document.getElementById('btn-cancel-lecture-edit').style.display = "none";
+        }
+
+        function deleteLecture(courseKey, index) {
+            if(confirm('هل أنت متأكد من مسح هذا الدرس؟')) {
+                let db = JSON.parse(localStorage.getItem('platform_courses_v2')) || {};
+                db[courseKey].lectures.splice(index, 1);
+                localStorage.setItem('platform_courses_v2', JSON.stringify(db));
+                renderCoursesTree();
+            }
+        }
+
+        function renderCoursesTree() {
+            const db = JSON.parse(localStorage.getItem('platform_courses_v2')) || {};
+            const dropdown = document.getElementById('lecture-course-select');
+            const tree = document.getElementById('courses-management-tree');
+            dropdown.innerHTML = ""; tree.innerHTML = "";
+
+            Object.keys(db).forEach(key => {
+                dropdown.innerHTML += `<option value="${key}">${key}</option>`;
+                let privacyText = db[key].privacy === 'all' ? 'متاح للجميع' : db[key].privacy === 'students' ? 'للطلاب فقط' : 'مغلق لإدمن';
+                let privacyClass = db[key].privacy === 'all' ? 'status-all' : db[key].privacy === 'students' ? 'status-students' : 'status-admin';
+
+                let lecsHtml = "";
+                db[key].lectures.forEach((lec, idx) => {
+                    lecsHtml += `
+                        <div class="lecture-row">
+                            <span><i class="fas fa-play-circle" style="color:#00a896;"></i> ${lec.title}</span>
+                            <div>
+                                <button class="btn-panel" style="padding:4px 8px; font-size:12px;" onclick="editLecture('${key}', ${idx})">تعديل</button>
+                                <button class="btn-panel btn-danger" style="padding:4px 8px; font-size:12px;" onclick="deleteLecture('${key}', ${idx})">حذف</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                tree.innerHTML += `
+                    <div class="course-item-box">
+                        <div class="course-header-row">
+                            <span><i class="fas fa-folder-open"></i> ${key} <span class="badge-status ${privacyClass}">${privacyText}</span></span>
+                            <div>
+                                <button class="btn-panel" style="padding:4px 10px;" onclick="editCourse('${key}')">تعديل القسم</button>
+                                <button class="btn-panel btn-danger" style="padding:4px 10px;" onclick="deleteCourse('${key}')">حذف بالكامل</button>
+                            </div>
+                        </div>
+                        <div style="margin-top:10px; padding-right:15px;">${lecsHtml || '<p style="color:#aaa; font-size:12px;">لا توجد دروس مضافة هنا بعد.</p>'}</div>
+                    </div>
+                `;
+            });
+        }
+
+        /* --- 📝 نظام منشئ ومولد الأسئلة الذكي للامتحانات --- */
+        function addNewQuestionBlockToForm() {
+            questionCounter++;
+            const zone = document.getElementById('questions-builder-zone');
+            const qBlock = document.createElement('div');
+            qBlock.className = 'question-builder-item';
+            qBlock.id = `q-block-${questionCounter}`;
+            qBlock.innerHTML = `
+                <button class="remove-q-btn" onclick="document.getElementById('q-block-${questionCounter}').remove()">حذف السؤال</button>
+                <div class="form-group">
+                    <label>نص السؤال الحالي</label>
+                    <input type="text" class="exam-q-text" placeholder="اكتب السؤال هنا...">
+                </div>
+                <div class="form-group">
+                    <label>خيارات الإجابة (الاختيارات الأربعة)</label>
+                    <input type="text" class="exam-opt-1" placeholder="الاختيار الأول" style="width:24%; display:inline-block; margin-left:1%;">
+                    <input type="text" class="exam-opt-2" placeholder="الاختيار الثاني" style="width:24%; display:inline-block; margin-left:1%;">
+                    <input type="text" class="exam-opt-3" placeholder="الاختيار الثالث" style="width:24%; display:inline-block; margin-left:1%;">
+                    <input type="text" class="exam-opt-4" placeholder="الاختيار الرابع" style="width:24%; display:inline-block;">
+                </div>
+                <div class="form-group">
+                    <label>رقم الإجابة الصحيحة النموذجية (مفتاح الحل التلقائي)</label>
+                    <select class="exam-q-correct">
+                        <option value="0">الاختيار الأول هو الصحيح</option>
+                        <option value="1">الاختيار الثاني هو الصحيح</option>
+                        <option value="2">الاختيار الثالث هو الصحيح</option>
+                        <option value="3">الاختيار الرابع هو الصحيح</option>
+                    </select>
+                </div>
+            `;
+            zone.appendChild(qBlock);
+        }
+
+        function publishExamToStudents() {
+            const targetClass = document.getElementById('exam-target-class').value;
+            const title = document.getElementById('exam-title-input').value.trim();
+            const qBlocks = document.querySelectorAll('.question-builder-item');
+
+            if(!title || qBlocks.length === 0) return alert('برجاء كتابة عنوان الامتحان وإضافة سؤال واحد على الأقل!');
+
+            let questionsArray = [];
+            let isValid = true;
+
+            qBlocks.forEach(block => {
+                const qText = block.querySelector('.exam-q-text').value.trim();
+                const opt1 = block.querySelector('.exam-opt-1').value.trim();
+                const opt2 = block.querySelector('.exam-opt-2').value.trim();
+                const opt3 = block.querySelector('.exam-opt-3').value.trim();
+                const opt4 = block.querySelector('.exam-opt-4').value.trim();
+                const correctIdx = parseInt(block.querySelector('.exam-q-correct').value);
+
+                if(!qText || !opt1 || !opt2) { isValid = false; return; }
+
+                questionsArray.push({
+                    question: qText,
+                    options: [opt1, opt2, opt3, opt4],
+                    correctIndex: correctIdx
+                });
+            });
+
+            if(!isValid) return alert('برجاء التأكد من كتابة نص الأسئلة والاختيارات الأساسية بالكامل!');
+
+            let examsDb = JSON.parse(localStorage.getItem('platform_exams_v2')) || [];
+            examsDb.push({
+                id: Date.now(),
+                targetClass: targetClass,
+                title: title,
+                questions: questionsArray
+            });
+
+            localStorage.setItem('platform_exams_v2', JSON.stringify(examsDb));
+            alert(`🎉 تم نشر وتثبيت امتحان "${title}" بنجاح لـ ${targetClass}!`);
+            
+            document.getElementById('exam-title-input').value = "";
+            document.getElementById('questions-builder-zone').innerHTML = "";
+            renderPublishedExams();
+        }
+
+        function renderPublishedExams() {
+            const examsDb = JSON.parse(localStorage.getItem('platform_exams_v2')) || [];
+            const list = document.getElementById('published-exams-list');
+            list.innerHTML = "";
+
+            if(examsDb.length === 0) { list.innerHTML = "<p style='color:#aaa;'>لا توجد امتحانات منشورة حالياً.</p>"; return; }
+
+            examsDb.forEach((ex, idx) => {
+                list.innerHTML += `
+                    <div class="lecture-row" style="background:#fff; margin-bottom:8px; border:1px solid #cbd5e1;">
+                        <span><i class="fas fa-file-alt" style="color:#3b82f6;"></i> <strong>${ex.title}</strong> (${ex.targetClass}) - [${ex.questions.length} سؤال]</span>
+                        <button class="btn-panel btn-danger" style="padding:4px 8px; font-size:12px;" onclick="deleteExam(${ex.id})">حذف الامتحان</button>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteExam(id) {
+            if(confirm('هل تريد حذف هذا الامتحان نهائياً وإلغائه من عند الطلاب؟')) {
+                let examsDb = JSON.parse(localStorage.getItem('platform_exams_v2')) || [];
+                examsDb = examsDb.filter(ex => ex.id !== id);
+                localStorage.setItem('platform_exams_v2', JSON.stringify(examsDb));
+                renderPublishedExams();
+            }
+        }
+
+        /* --- 💬 صندوق الوارد المزدوج الذكي (طلاب / أولياء أمور) --- */
+        function switchInboxTab(role) {
+            activeTabRole = role;
+            document.getElementById('tab-students').classList.toggle('active', role === 'student');
+            document.getElementById('tab-parents').classList.toggle('active', role === 'parent');
+            loadInboxEngine();
+        }
+
+        function loadInboxEngine() {
+            const messages = JSON.parse(localStorage.getItem('global_chat_messages')) || [];
+            const listContainer = document.getElementById('users-list-container');
+            listContainer.innerHTML = "";
+            const uniqueUsers = {};
+
+            // تصفية المحادثات بناءً على التبويب المختار (طالب أو ولي أمر)
+            messages.filter(m => m.userRole === activeTabRole).forEach(m => {
+                uniqueUsers[m.studentEmail] = {
+                    name: activeTabRole === 'student' ? m.studentName : m.parentName,
+                    subTitle: activeTabRole === 'student' ? `كود الطالب: ${m.studentCode}` : `والد الطالب: ${m.studentName}`,
+                    lastMessage: m.text,
+                    email: m.studentEmail
+                };
+            });
+
+            Object.values(uniqueUsers).forEach(u => {
+                listContainer.innerHTML += `
+                    <div class="user-item ${u.email === selectedUserEmail ? 'active' : ''}" onclick="openUserChat('${u.email}', '${u.name}')">
+                        <h4>${u.name}</h4>
+                        <span style="font-size:11px; color:#64748b;">${u.subTitle}</span>
+                        <p style="font-size:13px; color:#475569; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:4px;">${u.lastMessage}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function openUserChat(email, name) {
+            selectedUserEmail = email;
+            document.getElementById('active-chat-header').innerText = `المحادثة الرسمية مع: ${name}`;
+            renderMessages();
+        }
+
+        function renderMessages() {
+            if(!selectedUserEmail) return;
+            const messages = JSON.parse(localStorage.getItem('global_chat_messages')) || [];
+            const container = document.getElementById('admin-chat-messages');
+            container.innerHTML = "";
+
+            messages.filter(m => m.studentEmail === selectedUserEmail && m.userRole === activeTabRole).forEach(m => {
+                container.innerHTML += `<div class="msg ${m.sender}">${m.text}</div>`;
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendAdminReply() {
+            const input = document.getElementById('admin-reply-input');
+            if(!selectedUserEmail || input.value.trim() === "") return;
+
+            let messages = JSON.parse(localStorage.getItem('global_chat_messages')) || [];
+            messages.push({
+                studentEmail: selectedUserEmail,
+                userRole: activeTabRole,
+                sender: "admin",
+                text: input.value.trim(),
+                date: Date.now()
+            });
+
+            localStorage.setItem('global_chat_messages', JSON.stringify(messages));
+            input.value = ""; renderMessages(); loadInboxEngine();
+        }
+
+        // تشغيل المنظومة والمزامنة الفورية
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInboxEngine();
+            renderCoursesTree();
+            addNewQuestionBlockToForm(); // وضع حقل سؤال أول تلقائياً بالفورم
+            
+            // تحديث دوري ذكي للشات كل 3 ثوانٍ
+            setInterval(() => { loadInboxEngine(); renderMessages(); }, 3000);
+        });
+    </script>
+</body>
+</html>

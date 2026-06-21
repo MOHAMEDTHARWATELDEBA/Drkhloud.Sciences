@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>شاشة الاختبار الإلكتروني التفاعلية</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+        body { background:#f1f5f9; padding:40px; text-align:right; }
+        .exam-window { background:white; padding:35px; border-radius:12px; max-width:800px; margin:0 auto; box-shadow:0 4px 15px rgba(0,0,0,0.06); }
+        .q-block { background:#f8fafc; border:1px solid #e2e8f0; padding:20px; border-radius:8px; margin-bottom:20px; }
+        .q-title { font-size:18px; color:#2c3e50; margin-bottom:12px; font-weight:bold; }
+        .opt-row { display:block; padding:12px; margin:6px 0; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; background:#fff; transition:0.2s; }
+        .opt-row:hover { background:#f1f5f9; }
+        .opt-row input { margin-left:10px; }
+        .btn-submit { background:#00a896; color:white; border:none; padding:12px 30px; border-radius:6px; font-weight:bold; font-size:16px; cursor:pointer; }
+    </style>
+</head>
+<body>
+
+<div class="exam-window">
+    <h1 id="ex-display-title" style="color:#2c3e50; margin-bottom:5px;">عنوان الامتحان</h1>
+    <p id="ex-display-meta" style="color:#64748b; margin-bottom:25px; border-bottom:2px dashed #e2e8f0; padding-bottom:10px;"></p>
+    
+    <div id="questions-viewport"></div>
+    <button class="btn-submit" onclick="processStudentAnswers()">إرسال وتسجيل إجابات الامتحان</button>
+</div>
+
+<script>
+    // الحصول على معرف الامتحان من الرابط
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = parseInt(urlParams.get('id'));
+    
+    let currentExam = null;
+    let activeStudent = JSON.parse(sessionStorage.getItem('currentUser'));
+
+    function renderExamViewport() {
+        const examsDb = JSON.parse(localStorage.getItem('platform_exams_v2')) || [];
+        currentExam = examsDb.find(ex => ex.id === examId);
+
+        if(!currentExam) {
+            document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>❌ خطأ: الامتحان غير موجود أو تم حذفه!</h2>";
+            return;
+        }
+
+        document.getElementById('ex-display-title').innerText = currentExam.title;
+        document.getElementById('ex-display-meta').innerText = `المرحلة الدراسية: ${currentExam.targetClass} | إجمالي الأسئلة: ${currentExam.questions.length}`;
+
+        const viewport = document.getElementById('questions-viewport');
+        viewport.innerHTML = "";
+
+        currentExam.questions.forEach((q, qIdx) => {
+            let optionsHtml = "";
+            q.options.forEach((opt, oIdx) => {
+                if(opt && opt.trim() !== "") {
+                    optionsHtml += `
+                        <label class="opt-row">
+                            <input type="radio" name="question-${qIdx}" value="${oIdx}"> ${opt}
+                        </label>
+                    `;
+                }
+            });
+
+            viewport.innerHTML += `
+                <div class="q-block">
+                    <div class="q-title">س ${qIdx + 1}: ${q.question}</div>
+                    ${optionsHtml}
+                </div>
+            `;
+        });
+    }
+
+    function processStudentAnswers() {
+        let score = 0;
+        let answersSheet = [];
+
+        for (let i = 0; i < currentExam.questions.length; i++) {
+            const selected = document.querySelector(`input[name="question-${i}"]:checked`);
+            if(!selected) {
+                alert(`برجاء الإجابة على السؤال رقم ${i+1} قبل الإرسال!`);
+                return;
+            }
+
+            let studentAnsIdx = parseInt(selected.value);
+            let correctAnsIdx = currentExam.questions[i].correctIndex;
+            let isCorrect = (studentAnsIdx === correctAnsIdx);
+
+            if(isCorrect) score++;
+
+            answersSheet.push({
+                questionText: currentExam.questions[i].question,
+                studentAnswer: currentExam.questions[i].options[studentAnsIdx],
+                correctAnswer: currentExam.questions[i].options[correctAnsIdx],
+                isCorrect: isCorrect
+            });
+        }
+
+        // حفظ النتيجة في قاعدة البيانات المشتركة
+        let resultsDb = JSON.parse(localStorage.getItem('exam_results_v2')) || [];
+        resultsDb.push({
+            examId: currentExam.id,
+            examTitle: currentExam.title,
+            studentName: activeStudent.name,
+            studentEmail: activeStudent.email,
+            score: score,
+            total: currentExam.questions.length,
+            date: new Date().toLocaleDateString('ar-EG'),
+            answersSheet: answersSheet
+        });
+
+        localStorage.setItem('exam_results_v2', JSON.stringify(resultsDb));
+        alert('🎉 تم تسجيل إجاباتك بنجاح، وتصحيح الامتحان تلقائياً! يمكنك لولي أمرك مراجعة ورقة الإجابة الآن.');
+        window.location.href = 'student-dashboard.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', renderExamViewport);
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>من أنا - Dr. Khloud Emad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+        body { background:#f8fafc; color:#2c3e50; text-align:right; line-height:1.7; }
+        header { background:#2c3e50; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; }
+        header .logo { color:#fff; font-size:22px; font-weight:bold; text-decoration:none; }
+        header .logo span { color:#00a896; }
+        .nav-links { list-style:none; display:flex; gap:20px; }
+        .nav-links a { color:#cbd5e1; text-decoration:none; font-weight:600; }
+        .nav-links a:hover, .nav-links a.active { color:#00a896; }
+
+        .about-container { max-width:850px; margin:50px auto; background:#fff; padding:40px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.02); text-align:center; }
+        .about-container h2 { color:#2c3e50; font-size:26px; margin-bottom:15px; }
+        .about-container p { color:#475569; font-size:16px; margin-bottom:20px; max-width:700px; margin-left:auto; margin-right:auto; }
+        .features-list { display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin-top:30px; }
+        .feat-box { background:#f1f5f9; padding:20px; border-radius:8px; width:240px; text-align:right; }
+        .feat-box i { color:#00a896; font-size:24px; margin-bottom:10px; }
+        .feat-box h4 { margin-bottom:5px; color:#2c3e50; }
+        .feat-box p { font-size:13px; color:#64748b; margin:0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">Dr. Khloud <span>Emad</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="courses.html">المناهج والدروس</a></li>
+            <li><a href="about.html" class="active">من أنا؟</a></li>
+            <li><a href="contact.html">تواصل معنا</a></li>
+            <li><a href="student-dashboard.html"><i class="fas fa-user-circle"></i> حسابي</a></li>
+        </ul>
+    </header>
+
+    <div class="about-container">
+        <h2>د. خلود عماد</h2>
+        <p style="color:#00a896; font-weight:bold; font-size:18px;">خبيرة تدريس علوم الأحياء والجيولوجيا للمراحل الثانوية والابتدائية</p>
+        <p>رسالتنا هي تبسيط العلوم المعقدة وتحويل الأفكار الجافة إلى تجارب مرئية تفاعلية ترسخ في ذهن الطالب وتضمن له التفوق والوصول للدرجة النهائية الإبداعية بفضل تكنولوجيا التعليم الحديثة.</p>
+        
+        <div class="features-list">
+            <div class="feat-box">
+                <i class="fas fa-shield-alt"></i>
+                <h4>شرح مفاهيمي دقيق</h4>
+                <p>التركيز الكامل على نواتج التعلم الحقيقية وليس التلقين الأعمى.</p>
+            </div>
+            <div class="feat-box">
+                <i class="fas fa-bolt"></i>
+                <h4>امتحانات آلية فوتونية</h4>
+                <p>تقييم مستمر مع تقارير شاملة لأولياء الأمور عقب الفراغ من الحل.</p>
+            </div>
+            <div class="feat-box">
+                <i class="fas fa-heart"></i>
+                <h4>متابعة أبوية لصيقة</h4>
+                <p>تواصل مباشر لحل المشكلات الأكاديمية والنفسية لطلابنا أولاً بأول.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المناهج والمحاضرات - Dr. Khloud Emad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+        body { background:#f8fafc; color:#2c3e50; text-align:right; }
+        header { background:#2c3e50; padding:15px 30px; display:flex; justify-content:space-between; align-items:center; }
+        header .logo { color:#fff; font-size:22px; font-weight:bold; text-decoration:none; }
+        header .logo span { color:#00a896; }
+        .nav-links { list-style:none; display:flex; gap:20px; }
+        .nav-links a { color:#cbd5e1; text-decoration:none; font-weight:600; }
+        .nav-links a:hover, .nav-links a.active { color:#00a896; }
+
+        .container { max-width:1000px; margin:40px auto; padding:0 20px; }
+        .course-card { background:#fff; border-radius:12px; padding:25px; margin-bottom:25px; box-shadow:0 4px 10px rgba(0,0,0,0.03); border-right:5px solid #00a896; }
+        .course-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px; }
+        .course-title { font-size:20px; font-weight:bold; color:#2c3e50; }
+        
+        .lecture-list { display:flex; flex-direction:column; gap:12px; }
+        .lecture-item { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; background:#f1f5f9; border-radius:8px; text-decoration:none; color:#334155; transition:0.2s; }
+        .lecture-item:hover { background:#e2e8f0; }
+        
+        .badge { font-size:12px; padding:4px 10px; border-radius:20px; font-weight:bold; color:#fff; }
+        .bg-open { background:#10b981; }
+        .bg-lock { background:#ef4444; }
+        .btn-go { background:#00a896; color:#fff; padding:6px 14px; border-radius:6px; font-size:13px; font-weight:bold; text-decoration:none; }
+        .locked-item { opacity:0.6; pointer-events:none; background:#e2e8f0 !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">Dr. Khloud <span>Emad</span></a>
+        <ul class="nav-links">
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="courses.html" class="active">المناهج والدروس</a></li>
+            <li><a href="about.html">من أنا؟</a></li>
+            <li><a href="contact.html">تواصل معنا</a></li>
+            <li><a href="student-dashboard.html"><i class="fas fa-user-circle"></i> حسابي</a></li>
+        </ul>
+    </header>
+
+    <div class="container">
+        <h1 style="margin-bottom:30px; color:#2c3e50;"><i class="fas fa-book"></i> الفهرس والمناهج الدراسية المتاحة</h1>
+        <div id="dynamic-courses-container"></div>
+    </div>
+
+    <script>
+        // الحصول على حالة وجروب المستخدم الحالي من السيشن
+        const activeUser = JSON.parse(sessionStorage.getItem('currentUser'));
+        // لو الطالب مش مسجل دخول، بيعتبر 'guest' زائر تلقائياً
+        const currentUserRole = activeUser ? 'student' : 'guest'; 
+
+        function loadCoursesView() {
+            const db = JSON.parse(localStorage.getItem('platform_courses_v2')) || {};
+            const container = document.getElementById('dynamic-courses-container');
+            container.innerHTML = "";
+
+            if (Object.keys(db).length === 0) {
+                container.innerHTML = "<p style='text-align:center; color:#94a3b8; padding:30px;'>لا توجد مناهج أو محاضرات مرفوعة حالياً من الإدارة.</p>";
+                return;
+            }
+
+            Object.keys(db).forEach(key => {
+                const course = db[key];
+                let accessGranted = false;
+
+                // مطابقة صلاحيات المحتوى مع نوع المستخدم
+                if (course.privacy === 'all') {
+                    accessGranted = true;
+                } else if (course.privacy === 'students' && (currentUserRole === 'student' || currentUserRole === 'admin')) {
+                    accessGranted = true;
+                } else if (course.privacy === 'admin' && currentUserRole === 'admin') {
+                    accessGranted = true;
+                }
+
+                let badgeHtml = accessGranted ? '<span class="badge bg-open"><i class="fas fa-unlock"></i> متاح للدراسة</span>' : '<span class="badge bg-lock"><i class="fas fa-lock"></i> خاص بالمشتركين</span>';
+                
+                let lecsHtml = "";
+                course.lectures.forEach(lec => {
+                    if (accessGranted) {
+                        lecsHtml += `
+                            <div class="lecture-item">
+                                <span><i class="fas fa-play-circle" style="color:#00a896; margin-left:8px;"></i> ${lec.title}</span>
+                                <a href="viewer.html?video=${encodeURIComponent(lec.video)}&pdf=${encodeURIComponent(lec.pdf || '')}" class="btn-go">دخول الدرس</a>
+                            </div>
+                        `;
+                    } else {
+                        lecsHtml += `
+                            <div class="lecture-item locked-item">
+                                <span><i class="fas fa-lock" style="color:#64748b; margin-left:8px;"></i> ${lec.title} (مغلق)</span>
+                                <span style="font-size:12px; color:#ef4444;">سجل دخولك لتفعيل المشاهدة</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                container.innerHTML += `
+                    <div class="course-card">
+                        <div class="course-header">
+                            <span class="course-title">${key}</span>
+                            ${badgeHtml}
+                        </div>
+                        <div class="lecture-list">${lecsHtml || '<p style="color:#aaa; font-size:13px;">لا توجد محاضرات في هذا القسم بعد.</p>'}</div>
+                    </div>
+                `;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCoursesView);
+    </script>
+</body>
+</html>

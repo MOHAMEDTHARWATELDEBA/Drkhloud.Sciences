@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة الطالب - Dr. Khloud Emad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, sans-serif; }
+        body { background:#f4f6f9; color:#333; padding:20px; }
+        .container { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:300px 1fr; gap:20px; }
+        
+        /* القائمة الجانبية وبيانات الطالب */
+        .profile-side { background:#fff; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); text-align:center; height:fit-content; }
+        .avatar { width:90px; height:90px; background:#00a896; color:#fff; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:36px; margin-bottom:15px; }
+        .info-stat { text-align:right; margin-top:20px; border-top:1px solid #eee; padding-top:15px; }
+        .info-stat p { font-size:14px; margin-bottom:10px; color:#555; }
+        .info-stat strong { color:#2c3e50; }
+
+        /* منطقة المحتوى */
+        .content-area { display:flex; flex-direction:column; gap:20px; }
+        .card { background:#fff; padding:25px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.05); text-align:right; }
+        .card h3 { color:#2c3e50; margin-bottom:15px; border-bottom:2px solid #00a896; padding-bottom:8px; display:flex; align-items:center; gap:8px; }
+        
+        /* صندوق الرسائل */
+        .chat-box { height:200px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px; overflow-y:auto; margin-bottom:10px; display:flex; flex-direction:column; gap:8px; }
+        .msg { max-width:75%; padding:8px 12px; border-radius:8px; font-size:14px; }
+        .msg.student { background:#00a896; color:#fff; align-self:flex-start; }
+        .msg.admin { background:#2c3e50; color:#fff; align-self:flex-end; }
+        .chat-input-row { display:flex; gap:10px; }
+        .chat-input-row input { flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px; text-align:right; }
+        .btn { background:#00a896; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-weight:bold; cursor:pointer; }
+        
+        /* قائمة الامتحانات */
+        .exam-item { display:flex; justify-content:between; align-items:center; padding:15px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:10px; justify-content: space-between;}
+        .exam-btn { background:#3b82f6; color:white; text-decoration:none; padding:8px 15px; border-radius:6px; font-size:13px; font-weight:bold; }
+        .exam-btn.solved { background:#10b981; pointer-events:none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <aside class="profile-side">
+        <div class="avatar"><i class="fas fa-user-graduate"></i></div>
+        <h2 id="st-name">جاري التحميل...</h2>
+        <div class="info-stat">
+            <p><i class="fas fa-id-card"></i> كود الطالب: <strong id="st-code">#000</strong></p>
+            <p><i class="fas fa-graduation-cap"></i> السنة الدراسية: <strong id="st-class">---</strong></p>
+            <p><i class="fas fa-user-shield"></i> ولي الأمر: <strong id="st-parent">---</strong></p>
+            <p><i class="fas fa-phone"></i> رقم التليفون: <strong id="st-phone">---</strong></p>
+        </div>
+        <button class="btn btn-danger" style="background:#ef4444; width:100%; margin-top:15px;" onclick="sessionStorage.clear(); location.href='login.html';">تسجيل الخروج</button>
+    </aside>
+
+    <div class="content-area">
+        <div class="card">
+            <h3><i class="fas fa-file-signature"></i> الامتحانات المتاحة لصفك الدراسي</h3>
+            <div id="student-exams-container"></div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-paper-plane"></i> إرسال رسالة مباشرة إلى الدكتورة</h3>
+            <div class="chat-box" id="student-chat-box"></div>
+            <div class="chat-input-row">
+                <input type="text" id="student-msg-input" placeholder="اكتب استفسارك هنا واضغط إرسال..." onkeypress="if(event.key==='Enter') sendStudentMessage()">
+                <button class="btn" onclick="sendStudentMessage()">إرسال</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // محاكاة مستخدم مسجل دخول (سيتم جلبها ديناميكياً من صفحة اللوجن)
+    let activeStudent = JSON.parse(sessionStorage.getItem('currentUser')) || {
+        name: "أحمد محمد علي", code: "ST-8872", targetClass: "الصف الأول الثانوي", parentName: "محمد علي حسن", phone: "01023456789", email: "ahmed@test.com"
+    };
+    sessionStorage.setItem('currentUser', JSON.stringify(activeStudent));
+
+    function initStudentPage() {
+        document.getElementById('st-name').innerText = activeStudent.name;
+        document.getElementById('st-code').innerText = activeStudent.code;
+        document.getElementById('st-class').innerText = activeStudent.targetClass;
+        document.getElementById('st-parent').innerText = activeStudent.parentName;
+        document.getElementById('st-phone').innerText = activeStudent.phone;
+        
+        loadExamsForStudent();
+        loadChatMessages();
+    }
+
+    function loadExamsForStudent() {
+        const examsDb = JSON.parse(localStorage.getItem('platform_exams_v2')) || [];
+        const resultsDb = JSON.parse(localStorage.getItem('exam_results_v2')) || [];
+        const container = document.getElementById('student-exams-container');
+        container.innerHTML = "";
+
+        // تصفية الامتحانات لتناسب سنة الطالب الدراسية فقط
+        const filteredExams = examsDb.filter(ex => ex.targetClass === activeStudent.targetClass);
+
+        if(filteredExams.length === 0) {
+            container.innerHTML = "<p style='color:#aaa;'>لا توجد امتحانات مضافة لصفك الدراسي حالياً.</p>";
+            return;
+        }
+
+        filteredExams.forEach(exam => {
+            // فحص هل حل الطالب هذا الامتحان مسبقاً؟
+            const isSolved = resultsDb.some(res => res.examId === exam.id && res.studentEmail === activeStudent.email);
+            
+            container.innerHTML += `
+                <div class="exam-item">
+                    <div>
+                        <strong>${exam.title}</strong>
+                        <span style="font-size:12px; color:#666; display:block;">عدد الأسئلة: ${exam.questions.length} أسئلة</span>
+                    </div>
+                    ${isSolved ? 
+                        '<span class="exam-btn solved"><i class="fas fa-check-circle"></i> تم الحل بنجاح</span>' : 
+                        `<a href="take-exam.html?id=${exam.id}" class="exam-btn">بدء الاختبار الآن</a>`
+                    }
+                </div>
+            `;
+        });
+    }
+
+    function loadChatMessages() {
+        const messages = JSON.parse(localStorage.getItem('global_chat_messages')) || [];
+        const box = document.getElementById('student-chat-box');
+        box.innerHTML = "";
+        
+        messages.filter(m => m.studentEmail === activeStudent.email).forEach(m => {
+            box.innerHTML += `<div class="msg ${m.sender}">${m.text}</div>`;
+        });
+        box.scrollTop = box.scrollHeight;
+    }
+
+    function sendStudentMessage() {
+        const input = document.getElementById('student-msg-input');
+        if(input.value.trim() === "") return;
+
+        let messages = JSON.parse(localStorage.getItem('global_chat_messages')) || [];
+        messages.push({
+            studentEmail: activeStudent.email, studentName: activeStudent.name, studentCode: activeStudent.code,
+            parentName: activeStudent.parentName, userRole: "student", sender: "student", text: input.value.trim(), date: Date.now()
+        });
+        localStorage.setItem('global_chat_messages', JSON.stringify(messages));
+        input.value = "";
+        loadChatMessages();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { initStudentPage(); setInterval(loadChatMessages, 3000); });
+</script>
+</body>
+</html>
